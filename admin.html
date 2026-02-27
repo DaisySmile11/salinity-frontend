@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="icon" href="assets/favicon.png" />
+</head>
+
+<body class="admin-login-page">
+  <main class="admin-login-wrap">
+    <div class="admin-login-card" role="region" aria-label="Admin">
+      <div class="admin-brand">
+        <img class="admin-favicon" src="assets/favicon.png" alt="Favicon" />
+      </div>
+
+      <h1 id="adminTitle" class="admin-title">Đăng nhập Admin</h1>
+
+      <!-- Login form -->
+      <form id="adminLoginForm" class="admin-form" autocomplete="on">
+        <div class="admin-field">
+          <label for="adminEmail">Email:</label>
+          <input id="adminEmail" name="email" type="email" autocomplete="username" required />
+        </div>
+
+        <div class="admin-field">
+          <label for="adminPassword">Mật khẩu:</label>
+          <input id="adminPassword" name="password" type="password" autocomplete="current-password" required />
+        </div>
+
+        <button class="admin-submit" type="submit">Đăng nhập</button>
+
+        <button id="goHomeBtnLogin" class="admin-submit" type="button">
+          Đi đến trang chủ →
+        </button>
+
+        <div id="adminMsg" class="admin-msg" aria-live="polite"></div>
+      </form>
+
+      <!-- Logged-in view -->
+      <div id="adminLoggedInActions" class="admin-form" style="display:none">
+        <div class="admin-field" style="margin-top:8px">
+          <strong>Thiết lập ngưỡng (Thresholds)</strong>
+          <div class="admin-msg" style="margin-top:6px">Ngưỡng này dùng chung (global) cho toàn bộ website.</div>
+        </div>
+
+        <form id="thresholdForm" class="admin-form" style="margin-top:0">
+          <div class="admin-field">
+            <label>Độ mặn thấp (SAL_LOW):</label>
+            <input id="t_sal_low" type="number" step="0.1" required />
+          </div>
+          <div class="admin-field">
+            <label>Độ mặn cao (SAL_HIGH):</label>
+            <input id="t_sal_high" type="number" step="0.1" required />
+          </div>
+
+          <div class="admin-field">
+            <label>pH thấp (PH_LOW):</label>
+            <input id="t_ph_low" type="number" step="0.1" required />
+          </div>
+          <div class="admin-field">
+            <label>pH cao (PH_HIGH):</label>
+            <input id="t_ph_high" type="number" step="0.1" required />
+          </div>
+
+          <div class="admin-field">
+            <label>Nhiệt độ thấp (TEMP_LOW):</label>
+            <input id="t_temp_low" type="number" step="0.1" required />
+          </div>
+          <div class="admin-field">
+            <label>Nhiệt độ cao (TEMP_HIGH):</label>
+            <input id="t_temp_high" type="number" step="0.1" required />
+          </div>
+
+          <div class="admin-field">
+            <label>Pin yếu (BAT_LOW - %):</label>
+            <input id="t_bat_low" type="number" step="1" required />
+          </div>
+
+          <div class="admin-field">
+            <label>Offline sau (OFFLINE_MINUTES - phút):</label>
+            <input id="t_offline_minutes" type="number" step="1" required />
+          </div>
+
+          <button id="saveThresholdBtn" class="admin-submit" type="submit">Lưu ngưỡng</button>
+          <button id="goHomeBtn" class="admin-submit" type="button">Đi đến trang chủ →</button>
+          <button class="admin-logout" id="adminLogoutBtn" type="button">Logout</button>
+
+          <div id="thresholdMsg" class="admin-msg" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="assets/js/admin.js"></script>
+</body>
+</html>
