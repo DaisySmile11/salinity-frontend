@@ -23,6 +23,22 @@ function setupMobileToggle() {
   });
 }
 
+
+function setActiveNav() {
+  const navDevices = document.getElementById("navDevices");
+  const navAdmin = document.getElementById("navAdmin");
+
+  // clear
+  [navDevices, navAdmin].forEach(el => el && el.classList.remove("active"));
+
+  const p = window.location.pathname.toLowerCase();
+  if (p.endsWith("/devices.html")) {
+    navDevices && navDevices.classList.add("active");
+  } else if (p.endsWith("/admin.html")) {
+    navAdmin && navAdmin.classList.add("active");
+  }
+}
+
 export function renderAuthNav() {
   const adminLink = document.getElementById("navAdmin");
   const loginLink = document.getElementById("navLogin");
@@ -61,5 +77,6 @@ export function renderAuthNav() {
 document.addEventListener("DOMContentLoaded", () => {
   enforceCanonicalHost();
   setupMobileToggle();
+  setActiveNav();
   renderAuthNav();
 });

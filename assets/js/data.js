@@ -218,7 +218,7 @@ export function deviceStatusLabelsFromLatest(latest) {
 }
 
 
-function deviceRowClassFromLatest(latest) {
+export function deviceRowClassFromLatest(latest) {
   const st = deviceStatus(latest);
   if (st === "offline") return "row-offline";
   if (st === "abnormal-salinity") return "row-danger";
