@@ -186,7 +186,7 @@ async function updateKpisForSelected(deviceId) {
 
   // Offline ưu tiên
   if (isOfflineFromLatest(latest, THRESHOLDS.OFFLINE_MINUTES)) {
-    statusEl.textContent = "Offline";
+    statusEl.textContent = "Mất kết nối";
     return;
   }
 
