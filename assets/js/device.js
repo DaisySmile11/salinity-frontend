@@ -332,7 +332,7 @@ function setDeviceTitle(deviceId) {
 function buildRealStatus(latest) {
   if (!latest) return "--";
 
-  if (isOfflineFromLatest(latest, THRESHOLDS.OFFLINE_MINUTES)) return "Offline";
+  if (isOfflineFromLatest(latest, THRESHOLDS.OFFLINE_MINUTES)) return "Mất kết nối";
 
   const parts = [];
 
