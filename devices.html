@@ -17,8 +17,12 @@
 <a id="navAdmin" href="admin.html" style="display:none;">Admin</a>
     </nav>
   </div>
-  <div class="header-right">
-    <a id="navAuth" class="nav-auth" href="login.html">Login</a>
+    <div class="header-right">
+    <div class="nav-auth-box">
+      <a id="navLogin" class="nav-auth" href="login.html">Đăng nhập</a>
+      <a id="navUserEmail" class="nav-user-email" href="admin.html" style="display:none;"><u>admin</u></a>
+      <button id="navLogoutBtn" class="btn-link" style="display:none;">Đăng xuất</button>
+    </div>
     <button class="nav-toggle" aria-label="Menu">☰</button>
   </div>
 </header>
@@ -32,7 +36,7 @@
         </p>
       </div>
 
-      <div class="card">
+      <div class="card"><div class="table-wrapper">
         <table id="devicesTable" class="device-table">
           <thead>
             <tr>
@@ -49,16 +53,16 @@
             </tr>
           </thead>
           <tbody id="deviceTableBody"></tbody>
-        </table></div>
+        </table></div></div>
       </div>
 
       <div class="card note-card">
         <p class="note-inline">
           <strong>Ngưỡng đánh giá trạng thái thiết bị:</strong><br />
-          Độ mặn: 8‰ - 12‰.<br />
-          pH: 6.5 - 8.5.<br />
-          Nhiệt độ: 25°C - 32°C.<br />
-          Pin: &gt; 20%.
+          Độ mặn: <span id="thrSalLow">—</span>‰ - <span id="thrSalHigh">—</span>‰.<br />
+          pH: <span id="thrPhLow">—</span> - <span id="thrPhHigh">—</span>.<br />
+          Nhiệt độ: <span id="thrTempLow">—</span>°C - <span id="thrTempHigh">—</span>°C.<br />
+          Pin: &gt; <span id="thrBatLow">—</span>%.
         </p>
       </div>
     </section>

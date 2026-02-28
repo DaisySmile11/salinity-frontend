@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8"/>
-  <title>Login</title>
+  <title>Đăng nhập</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="assets/css/styles.css"/>
   <link rel="icon" href="assets/favicon.png"/>
@@ -17,8 +17,12 @@
 <a id="navAdmin" href="admin.html" style="display:none;">Admin</a>
     </nav>
   </div>
-  <div class="header-right">
-    <a id="navAuth" class="nav-auth" href="login.html">Login</a>
+    <div class="header-right">
+    <div class="nav-auth-box">
+      <a id="navLogin" class="nav-auth" href="login.html">Đăng nhập</a>
+      <a id="navUserEmail" class="nav-user-email" href="admin.html" style="display:none;"><u>admin</u></a>
+      <button id="navLogoutBtn" class="btn-link" style="display:none;">Đăng xuất</button>
+    </div>
     <button class="nav-toggle" aria-label="Menu">☰</button>
   </div>
 </header>
@@ -38,7 +42,7 @@
           <label for="loginPassword">Mật khẩu:</label>
           <input id="loginPassword" type="password" placeholder="••••••" required />
         </div>
-        <button class="admin-submit" type="submit">Login</button>
+        <button class="admin-submit" type="submit">Đăng nhập</button>
         <div id="loginMsg" class="admin-msg" aria-live="polite" style="margin-top:10px"></div>
       </form>
     </div>

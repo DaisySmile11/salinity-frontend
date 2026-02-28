@@ -52,19 +52,28 @@ function bindExportCsvButton() {
 function toCsv(rows) {
   const header = ["datetime","salinity","ph","temperature","voltage","battery"];
   const lines = [header.join(",")];
+
   for (const r of rows) {
+    // Prefer human-readable datetime for CSV
+    const dt =
+      (r.date && r.time) ? `${r.time} ${r.date}` :
+      (r.colDateTime ? fmtDateTime(r.colDateTime) : "");
+
     const line = [
-      r.colDateTime || "",
+      dt || "",
       r.salinity ?? "",
       r.ph ?? "",
       r.temperature ?? "",
       r.voltage ?? "",
       r.battery ?? "",
     ].map(v => `"${String(v).replaceAll('"','""')}"`).join(",");
+
     lines.push(line);
   }
-  return lines.join("\n");
+  return lines.join("
+");
 }
+
 
 function downloadCsv(csv, filename) {
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

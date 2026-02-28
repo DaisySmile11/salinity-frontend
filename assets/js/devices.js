@@ -1,8 +1,5 @@
 // assets/js/devices.js
-// Devices list page (devices.html)
-// - List devices from Firestore
-// - Read latest for each device
-// - Row color based on thresholds (loaded from backend API)
+// Danh sách thiết bị (devices.html)
 
 import {
   collection,
@@ -27,8 +24,9 @@ import {
 import { isAdminLoggedIn } from "./auth.js";
 import { renderAuthNav } from "./nav.js";
 
-
 const $ = (id) => document.getElementById(id);
+
+let currentRows = [];
 
 async function listDeviceIds() {
   const q = query(collection(db, "devices"), limit(200));
@@ -37,18 +35,14 @@ async function listDeviceIds() {
 }
 
 async function fetchLatest(deviceId) {
-  try {
-    const ref = doc(db, "devices", deviceId, "stats", "latest");
-    const snap = await getDoc(ref);
-    return snap.exists() ? snap.data() : null;
-  } catch (e) {
-    console.warn("fetchLatest failed:", deviceId, e);
-    return null;
-  }
+  const ref = doc(db, "devices", deviceId, "stats", "latest");
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data() : null;
 }
 
 function buildRow(deviceId, latest) {
   const meta = getDeviceMeta(deviceId);
+
   const sal = safeNum(latest?.salinity ?? latest?.sal ?? latest?.avgSalinity);
   const ph = safeNum(latest?.ph ?? latest?.avgPH);
   const temp = safeNum(latest?.temperature ?? latest?.temp ?? latest?.avgTemp);
@@ -63,12 +57,12 @@ function buildRow(deviceId, latest) {
   tr.innerHTML = `
     <td>${deviceId}</td>
     <td>${meta?.name || deviceId}</td>
-    <td>${(meta?.lat != null && meta?.lng != null) ? (meta.lat + ", " + meta.lng) : (meta?.location || "—")}</td>
+    <td class="col-location">${(meta?.lat != null && meta?.lng != null) ? (meta.lat + ", " + meta.lng) : (meta?.location || "—")}</td>
     <td>${sal ?? "—"}</td>
     <td>${temp ?? "—"}</td>
     <td>${ph ?? "—"}</td>
     <td>${batPct ?? "—"}</td>
-    <td>${volt ?? "—"}</td>
+    <td class="col-voltage">${volt ?? "—"}</td>
     <td>${deviceStatusTextFromLatest(latest)}</td>
     <td>${fmtDateTime(updatedAt) || "—"}</td>
   `;
@@ -81,33 +75,81 @@ function buildRow(deviceId, latest) {
   return tr;
 }
 
-
-
-function updateThresholdNote() {
-  // tương thích cả bản cũ (note-inline) và bản mới (spans)
-  const note = document.querySelector(".note-card .note-inline");
-  if (note) {
-    note.innerHTML = `
-      <strong>Ngưỡng đánh giá trạng thái thiết bị:</strong><br />
-      Độ mặn: ${THRESHOLDS.SAL_LOW}‰ - ${THRESHOLDS.SAL_HIGH}‰.<br />
-      pH: ${THRESHOLDS.PH_LOW} - ${THRESHOLDS.PH_HIGH}.<br />
-      Nhiệt độ: ${THRESHOLDS.TEMP_LOW}°C - ${THRESHOLDS.TEMP_HIGH}°C.<br />
-      Pin: > ${THRESHOLDS.BAT_LOW}%.
-    `;
-  }
-  updateThresholdText();
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
 }
 
-async async function renderTable() {
+function updateThresholdNote() {
+  setText("thrSalLow", `${THRESHOLDS.SAL_LOW}`);
+  setText("thrSalHigh", `${THRESHOLDS.SAL_HIGH}`);
+  setText("thrPhLow", `${THRESHOLDS.PH_LOW}`);
+  setText("thrPhHigh", `${THRESHOLDS.PH_HIGH}`);
+  setText("thrTempLow", `${THRESHOLDS.TEMP_LOW}`);
+  setText("thrTempHigh", `${THRESHOLDS.TEMP_HIGH}`);
+  setText("thrBatLow", `${THRESHOLDS.BAT_LOW}`);
+}
+
+function toCsvValue(v) {
+  const s = (v ?? "").toString().replaceAll('"', '""');
+  return `"${s}"`;
+}
+
+function exportDevicesCsv() {
+  const header = ["deviceId","displayName","location","salinity","temp","ph","batteryPct","batteryVolt","status","updatedAt"];
+  const lines = [header.join(",")];
+
+  for (const r of currentRows) {
+    lines.push([
+      toCsvValue(r.deviceId),
+      toCsvValue(r.displayName),
+      toCsvValue(r.location),
+      toCsvValue(r.salinity),
+      toCsvValue(r.temp),
+      toCsvValue(r.ph),
+      toCsvValue(r.batteryPct),
+      toCsvValue(r.batteryVolt),
+      toCsvValue(r.statusText),
+      // ✅ format datetime human readable
+      toCsvValue(fmtDateTime(r.updatedAt) || "")
+    ].join(","));
+  }
+
+  const csv = lines.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `devices-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function renderTable() {
   const tbody = $("deviceTableBody");
   if (!tbody) return;
 
   tbody.innerHTML = `<tr><td colspan="10">Đang tải…</td></tr>`;
 
-  const ids = await listDeviceIds();
-  const latestList = await Promise.all(ids.map(async (id) => [id, await fetchLatest(id)]));
+  let ids = [];
+  try {
+    ids = await listDeviceIds();
+  } catch (e) {
+    console.error(e);
+    tbody.innerHTML = `<tr><td colspan="10">Không thể tải danh sách thiết bị.</td></tr>`;
+    return;
+  }
 
-  // dùng cho Export CSV
+  const latestList = await Promise.all(ids.map(async (id) => {
+    try {
+      return [id, await fetchLatest(id)];
+    } catch {
+      return [id, null];
+    }
+  }));
+
   currentRows = latestList.map(([id, latest]) => {
     const meta = getDeviceMeta(id);
     const sal = safeNum(latest?.salinity ?? latest?.sal ?? latest?.avgSalinity);
@@ -116,6 +158,7 @@ async async function renderTable() {
     const volt = safeNum(latest?.batteryVolt ?? latest?.avgVoltage ?? latest?.voltage);
     const batPct = safeNum(latest?.batteryPct ?? latest?.batteryPercent ?? latest?.battery);
     const updatedAt = latest?.updatedAt ?? latest?.timestamp ?? latest?.measuredAt ?? latest?.time;
+
     return {
       deviceId: id,
       displayName: meta?.name || id,
@@ -126,85 +169,41 @@ async async function renderTable() {
       batteryPct: batPct ?? "",
       batteryVolt: volt ?? "",
       statusText: deviceStatusTextFromLatest(latest),
-      updatedAtText: fmtDateTime(updatedAt) || "",
+      updatedAt,
     };
   });
 
   tbody.innerHTML = "";
-  latestList.forEach(([id, latest]) => {
-    tbody.appendChild(buildRow(id, latest));
-  });
 
   if (!latestList.length) {
-    tbody.innerHTML = `<tr><td colspan="10">Không có thiết bị.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10">Chưa có thiết bị nào.</td></tr>`;
+    return;
+  }
+
+  for (const [id, latest] of latestList) {
+    tbody.appendChild(buildRow(id, latest));
   }
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
+function setupExportButton() {
+  const btn = $("devicesExportBtn");
+  if (!btn) return;
+  btn.style.display = isAdminLoggedIn() ? "inline-flex" : "none";
+  btn.onclick = (e) => {
+    e.preventDefault();
+    exportDevicesCsv();
+  };
+}
+
+async function init() {
   renderAuthNav();
-  // Load global thresholds from your backend
-  try { await loadThresholdsFromApi(); } catch (e) { console.warn(e); }
+
+  // load thresholds from backend; if fail, still render with default thresholds
+  try { await loadThresholdsFromApi(); } catch {}
   updateThresholdNote();
 
   await renderTable();
-
-  // Export CSV (chỉ hiện khi admin login)
-  const exportBtn = document.getElementById("devicesExportBtn");
-  if (exportBtn) {
-    exportBtn.style.display = isAdminLoggedIn() ? "inline-block" : "none";
-    exportBtn.onclick = () => {
-      const csv = rowsToCsv(currentRows);
-      downloadCsv(csv, `devices-${Date.now()}.csv`);
-    };
-  }
-
-
-  // Auto refresh every 60s
-  setInterval(renderTable, 60 * 1000);
-})
-
-function updateThresholdText() {
-  const sal = document.getElementById("th_sal");
-  const ph = document.getElementById("th_ph");
-  const temp = document.getElementById("th_temp");
-  const bat = document.getElementById("th_bat");
-
-  if (sal) sal.textContent = `${THRESHOLDS.SAL_LOW}‰ - ${THRESHOLDS.SAL_HIGH}‰`;
-  if (ph) ph.textContent = `${THRESHOLDS.PH_LOW} - ${THRESHOLDS.PH_HIGH}`;
-  if (temp) temp.textContent = `${THRESHOLDS.TEMP_LOW}°C - ${THRESHOLDS.TEMP_HIGH}°C`;
-  if (bat) bat.textContent = `> ${THRESHOLDS.BAT_LOW}%`;
+  setupExportButton();
 }
 
-function rowsToCsv(rows) {
-  const header = ["device_id","display_name","location","salinity","temp","ph","battery_pct","battery_volt","status","updated_at"];
-  const lines = [header.join(",")];
-
-  for (const r of rows) {
-    const line = [
-      r.deviceId ?? "",
-      r.displayName ?? "",
-      r.location ?? "",
-      r.salinity ?? "",
-      r.temp ?? "",
-      r.ph ?? "",
-      r.batteryPct ?? "",
-      r.batteryVolt ?? "",
-      r.statusText ?? "",
-      r.updatedAtText ?? ""
-    ].map(v => `"${String(v).replaceAll('"','""')}"`).join(",");
-    lines.push(line);
-  }
-  return lines.join("\n");
-}
-
-function downloadCsv(csv, filename) {
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-;
+document.addEventListener("DOMContentLoaded", init);
