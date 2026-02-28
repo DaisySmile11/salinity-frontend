@@ -18,7 +18,64 @@ import { db,
 
 import { renderDeviceDetailChart, fetchDeviceSeries } from "./charts.js";
 
+import { isAdminLoggedIn } from "./auth.js";
+
 const $ = (id) => document.getElementById(id);
+
+// =====================
+// Export CSV (Admin only)
+// =====================
+let lastHistoryRowsForExport = [];
+
+function bindExportCsvButton() {
+  const btn = document.getElementById("exportCsvBtn");
+  if (!btn) return;
+
+  // Chỉ cho export khi admin đã đăng nhập
+  btn.style.display = isAdminLoggedIn() ? "inline-flex" : "none";
+
+  btn.addEventListener("click", () => {
+    if (!isAdminLoggedIn()) {
+      alert("Bạn cần đăng nhập admin để export CSV.");
+      return;
+    }
+    if (!lastHistoryRowsForExport.length) {
+      alert("Chưa có dữ liệu để export.");
+      return;
+    }
+    const deviceId = $("detailDeviceSelect")?.value || "device";
+    const csv = toCsv(lastHistoryRowsForExport);
+    downloadCsv(csv, `${deviceId}-history.csv`);
+  });
+}
+
+function toCsv(rows) {
+  const header = ["datetime","salinity","ph","temperature","voltage","battery"];
+  const lines = [header.join(",")];
+  for (const r of rows) {
+    const line = [
+      r.colDateTime || "",
+      r.salinity ?? "",
+      r.ph ?? "",
+      r.temperature ?? "",
+      r.voltage ?? "",
+      r.battery ?? "",
+    ].map(v => `"${String(v).replaceAll('"','""')}"`).join(",");
+    lines.push(line);
+  }
+  return lines.join("\n");
+}
+
+function downloadCsv(csv, filename) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 
 // =====================
 // Detail table (history)
@@ -189,6 +246,7 @@ async function loadHistoryTable(deviceId, rangeSec) {
 
   const { key, order } = currentSort;
   const sorted = sortRows(normalized, key, order);
+  lastHistoryRowsForExport = sorted;
   renderHistoryTable(sorted);
   setSortIndicator(key, order);
 }
@@ -369,6 +427,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   try { await loadThresholdsFromApi(); } catch (e) { console.warn(e); }
   await populateDeviceSelect();
   bindSortEvents();
+  bindExportCsvButton();
 
   $("detailDeviceSelect")?.addEventListener("change", reloadDetail);
   $("detailRange")?.addEventListener("change", reloadDetail);
@@ -376,44 +435,3 @@ document.addEventListener("DOMContentLoaded", async () => {
   await reloadDetail();
 });
 
-import { isAdminLoggedIn } from "./auth.js";
-
-function setupExportButton(rows) {
-  const btn = document.getElementById("btnExportCsv"); // bạn tạo id này trong HTML
-  if (!btn) return;
-
-  btn.style.display = isAdminLoggedIn() ? "inline-block" : "none";
-
-  btn.onclick = () => {
-    const csv = toCsv(rows);
-    downloadCsv(csv, `device-${getDeviceId()}-${Date.now()}.csv`);
-  };
-}
-
-function toCsv(rows) {
-  const header = ["time","salinity","temp","ph","battery_pct","battery_volt"];
-  const lines = [header.join(",")];
-
-  for (const r of rows) {
-    const line = [
-      r.timeISO || "",
-      r.salinity ?? "",
-      r.temp ?? "",
-      r.ph ?? "",
-      r.batteryPct ?? "",
-      r.batteryVolt ?? ""
-    ].map(v => `"${String(v).replaceAll('"','""')}"`).join(",");
-    lines.push(line);
-  }
-  return lines.join("\n");
-}
-
-function downloadCsv(csv, filename) {
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}

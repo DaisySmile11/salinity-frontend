@@ -1,50 +1,33 @@
 // assets/js/admin.js (module)
-// Secure-ish admin flow using backend (JWT):
+// Admin flow using backend (JWT):
 // - Login: POST /auth/login
 // - Load thresholds: GET /thresholds
 // - Save thresholds: PUT /thresholds (requires Bearer token)
-// Also exposes window.AdminAuth.isAuthed() for UI gating elsewhere.
 
 import { API_BASE } from "./config.js";
-
-const TOKEN_KEY = "salinity_admin_token_v1";
-const ADMIN_KEY = "salinity_admin_info_v1";
+import { setAdminSession, getAdminToken, adminLogout, isAdminLoggedIn } from "./auth.js";
 
 const $ = (id) => document.getElementById(id);
 
-function setToken(token, admin) {
-  localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(ADMIN_KEY, JSON.stringify(admin || {}));
-}
-function getToken() {
-  return localStorage.getItem(TOKEN_KEY) || "";
-}
-function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(ADMIN_KEY);
-}
-function isAuthed() {
-  return !!getToken();
-}
-
 async function apiFetch(path, opts = {}) {
-  const token = getToken();
+  const token = getAdminToken();
   const headers = { "Content-Type": "application/json", ...(opts.headers || {}) };
   if (token) headers.Authorization = `Bearer ${token}`;
+
   const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
   const text = await res.text();
   let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
+  }
+
   if (!res.ok) {
-    const msg = (data && data.error) ? data.error : `HTTP ${res.status}`;
+    const msg = data && data.error ? data.error : `HTTP ${res.status}`;
     throw new Error(msg);
   }
   return data;
-}
-
-function updateExportUi() {
-  const exportBtn = document.getElementById("exportCsvBtn");
-  if (exportBtn) exportBtn.style.display = isAuthed() ? "inline-flex" : "none";
 }
 
 function updateAdminPageUi() {
@@ -55,16 +38,16 @@ function updateAdminPageUi() {
 
   if (!form && !actions) return;
 
-  if (isAuthed()) {
+  if (isAdminLoggedIn()) {
     if (form) form.style.display = "none";
     if (actions) actions.style.display = "grid";
-    if (msg) msg.textContent = "";
     if (title) title.textContent = "Thiết lập Admin";
+    if (msg) msg.textContent = "";
   } else {
     if (form) form.style.display = "grid";
     if (actions) actions.style.display = "none";
-    if (msg) msg.textContent = "";
     if (title) title.textContent = "Đăng nhập Admin";
+    if (msg) msg.textContent = "";
   }
 }
 
@@ -106,12 +89,13 @@ function bindLogin() {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
-      setToken(out.token, out.admin);
+
+      setAdminSession(out.token, out.admin);
       updateAdminPageUi();
       await loadThresholdForm();
-      if (msg) msg.textContent = "";
+      if (msg) msg.textContent = "✅ Đăng nhập thành công.";
     } catch (err) {
-      clearToken();
+      adminLogout();
       updateAdminPageUi();
       if (msg) msg.textContent = "Đăng nhập thất bại: " + err.message;
     }
@@ -122,9 +106,8 @@ function bindLogout() {
   const btn = $("adminLogoutBtn");
   if (!btn) return;
   btn.addEventListener("click", () => {
-    clearToken();
+    adminLogout();
     updateAdminPageUi();
-    updateExportUi();
     const tmsg = $("thresholdMsg");
     if (tmsg) tmsg.textContent = "";
   });
@@ -138,6 +121,11 @@ function bindThresholdSave() {
     e.preventDefault();
     const msg = $("thresholdMsg");
     if (msg) msg.textContent = "Đang lưu…";
+
+    if (!isAdminLoggedIn()) {
+      if (msg) msg.textContent = "❌ Bạn cần đăng nhập admin trước.";
+      return;
+    }
 
     const payload = {
       sal_low: Number($("t_sal_low").value),
@@ -169,52 +157,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindThresholdSave();
 
   updateAdminPageUi();
-  updateExportUi();
 
-  if (isAuthed()) {
+  if (isAdminLoggedIn()) {
     try {
       await loadThresholdForm();
-    } catch (e) {
-      // token có thể hết hạn
-      clearToken();
+    } catch {
+      adminLogout();
       updateAdminPageUi();
     }
   }
 });
-
-window.AdminAuth = { isAuthed };
-
-
-import { API_BASE } from "./config.js";
-import { setAdminSession, getAdminToken } from "./auth.js";
-
-async function login(email, password) {
-  const r = await fetch(`${API_BASE}/auth/login`, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ email, password })
-  });
-
-  const data = await r.json();
-  if (!r.ok) throw new Error(data?.error || "Login failed");
-
-  setAdminSession(data.token, data.admin);
-}
-
-import { getAdminToken } from "./auth.js";
-
-async function saveThresholds(payload) {
-  const token = getAdminToken();
-  const r = await fetch(`${API_BASE}/thresholds`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await r.json();
-  if (!r.ok) throw new Error(data?.error || "Failed to update thresholds");
-  return data;
-}

@@ -15,6 +15,7 @@ import {
 
 import {
   db,
+  THRESHOLDS,
   safeNum,
   fmtDateTime,
   getDeviceMeta,
@@ -76,6 +77,22 @@ function buildRow(deviceId, latest) {
   return tr;
 }
 
+
+
+function updateThresholdNote() {
+  const note = document.querySelector(".note-card .note-inline");
+  if (!note) return;
+
+  note.innerHTML = `
+    <strong>Ngưỡng đánh giá trạng thái thiết bị:</strong><br />
+    Độ mặn: ${THRESHOLDS.SAL_LOW}‰ - ${THRESHOLDS.SAL_HIGH}‰.<br />
+    pH: ${THRESHOLDS.PH_LOW} - ${THRESHOLDS.PH_HIGH}.<br />
+    Nhiệt độ: ${THRESHOLDS.TEMP_LOW}°C - ${THRESHOLDS.TEMP_HIGH}°C.<br />
+    Pin: &gt; ${THRESHOLDS.BAT_LOW}%.<br />
+    Offline: ${THRESHOLDS.OFFLINE_MINUTES} phút.
+  `;
+}
+
 async function renderTable() {
   const tbody = $("deviceTableBody");
   if (!tbody) return;
@@ -98,6 +115,7 @@ async function renderTable() {
 document.addEventListener("DOMContentLoaded", async () => {
   // Load global thresholds from your backend
   try { await loadThresholdsFromApi(); } catch (e) { console.warn(e); }
+  updateThresholdNote();
 
   await renderTable();
 
