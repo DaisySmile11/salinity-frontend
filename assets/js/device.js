@@ -375,3 +375,45 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await reloadDetail();
 });
+
+import { isAdminLoggedIn } from "./auth.js";
+
+function setupExportButton(rows) {
+  const btn = document.getElementById("btnExportCsv"); // bạn tạo id này trong HTML
+  if (!btn) return;
+
+  btn.style.display = isAdminLoggedIn() ? "inline-block" : "none";
+
+  btn.onclick = () => {
+    const csv = toCsv(rows);
+    downloadCsv(csv, `device-${getDeviceId()}-${Date.now()}.csv`);
+  };
+}
+
+function toCsv(rows) {
+  const header = ["time","salinity","temp","ph","battery_pct","battery_volt"];
+  const lines = [header.join(",")];
+
+  for (const r of rows) {
+    const line = [
+      r.timeISO || "",
+      r.salinity ?? "",
+      r.temp ?? "",
+      r.ph ?? "",
+      r.batteryPct ?? "",
+      r.batteryVolt ?? ""
+    ].map(v => `"${String(v).replaceAll('"','""')}"`).join(",");
+    lines.push(line);
+  }
+  return lines.join("\n");
+}
+
+function downloadCsv(csv, filename) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}

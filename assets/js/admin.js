@@ -183,3 +183,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 window.AdminAuth = { isAuthed };
+
+
+import { API_BASE } from "./config.js";
+import { setAdminSession, getAdminToken } from "./auth.js";
+
+async function login(email, password) {
+  const r = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await r.json();
+  if (!r.ok) throw new Error(data?.error || "Login failed");
+
+  setAdminSession(data.token, data.admin);
+}
+
+import { getAdminToken } from "./auth.js";
+
+async function saveThresholds(payload) {
+  const token = getAdminToken();
+  const r = await fetch(`${API_BASE}/thresholds`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await r.json();
+  if (!r.ok) throw new Error(data?.error || "Failed to update thresholds");
+  return data;
+}
