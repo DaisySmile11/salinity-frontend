@@ -1059,3 +1059,14 @@ body.admin-login-page {
   }
   .table-wrapper table{ min-width:720px; }
 }
+
+/* ==== Auth nav tweaks ==== */
+.nav-user-email{ color:#fff !important; text-decoration: underline; }
+.nav-auth-box{ display:flex; align-items:center; gap:10px; }
+@media (max-width: 640px){
+  .nav-user-email{ display:none !important; }
+}
+
+/* ==== Admin page centering ==== */
+body.page-admin .container{ display:flex; justify-content:center; }
+body.page-admin .admin-login-card{ margin:24px auto; }

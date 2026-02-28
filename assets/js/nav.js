@@ -53,7 +53,7 @@ export function renderAuthNav() {
       const ok = window.confirm("Bạn chắc chắn muốn đăng xuất chứ?");
       if (!ok) return;
       adminLogout();
-      window.location.href = "index.html";
+      window.location.href = "/";
     };
   }
 }

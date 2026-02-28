@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // đã login rồi -> về trang chủ
   if (isAdminLoggedIn()) {
-    window.location.href = "index.html";
+    window.location.href = "/";
     return;
   }
 
@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setAdminSession(data.token, data.admin);
       showMsg("✅ Đăng nhập thành công!", true);
       // về trang chủ (navbar sẽ hiện Admin + Logout)
-      window.location.href = "index.html";
+      window.location.href = "/";
     } catch (err) {
       showMsg(`❌ ${err.message}`, false);
     }
