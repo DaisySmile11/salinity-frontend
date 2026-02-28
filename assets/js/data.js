@@ -184,7 +184,41 @@ export function deviceStatusTextFromLatest(latest) {
 }
 
 // Khớp styles.css (nếu bạn có dùng bảng)
-export function deviceRowClassFromLatest(latest) {
+export function deviceStatusLabelsFromLatest(latest) {
+  const labels = [];
+
+  if (isOfflineFromLatest(latest)) {
+    labels.push("Mất kết nối");
+    return labels; // offline ưu tiên tuyệt đối
+  }
+
+  const sal = safeNum(latest?.salinity, null);
+  if (sal != null) {
+    if (sal > THRESHOLDS.SAL_HIGH) labels.push("Độ mặn cao");
+    else if (sal < THRESHOLDS.SAL_LOW) labels.push("Độ mặn thấp");
+  }
+
+  const ph = safeNum(latest?.ph, null);
+  if (ph != null) {
+    if (ph > THRESHOLDS.PH_HIGH) labels.push("pH cao");
+    else if (ph < THRESHOLDS.PH_LOW) labels.push("pH thấp");
+  }
+
+  const temp = safeNum(latest?.temperature, null);
+  if (temp != null) {
+    if (temp > THRESHOLDS.TEMP_HIGH) labels.push("Nhiệt độ cao");
+    else if (temp < THRESHOLDS.TEMP_LOW) labels.push("Nhiệt độ thấp");
+  }
+
+  const bat = safeNum(latest?.batteryPct, null);
+  if (bat != null && bat <= THRESHOLDS.BAT_LOW) labels.push("Pin yếu");
+
+  if (labels.length === 0) labels.push("Bình thường");
+  return labels;
+}
+
+
+function deviceRowClassFromLatest(latest) {
   const st = deviceStatus(latest);
   if (st === "offline") return "row-offline";
   if (st === "abnormal-salinity") return "row-danger";

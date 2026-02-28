@@ -51,7 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // về trang chủ (navbar sẽ hiện Admin + Logout)
       window.location.href = "/";
     } catch (err) {
-      showMsg(`❌ ${err.message}`, false);
+            let msg = err?.message || "Lỗi đăng nhập";
+      if (/invalid credentials/i.test(msg) || /401/.test(msg)) msg = "Email hoặc mật khẩu không đúng";
+      showMsg(`❌ ${msg}`, false);
     }
   });
 });

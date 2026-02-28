@@ -10,16 +10,7 @@ import {
   query,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-import {
-  db,
-  THRESHOLDS,
-  safeNum,
-  fmtDateTime,
-  getDeviceMeta,
-  deviceRowClassFromLatest,
-  deviceStatusTextFromLatest,
-  loadThresholdsFromApi,
-} from "./data.js";
+import { db, THRESHOLDS, safeNum, fmtDateTime, getDeviceMeta, deviceRowClassFromLatest, deviceStatusLabelsFromLatest, loadThresholdsFromApi } from "./data.js";
 
 import { isAdminLoggedIn } from "./auth.js";
 import { renderAuthNav } from "./nav.js";
@@ -63,7 +54,7 @@ function buildRow(deviceId, latest) {
     <td>${ph ?? "—"}</td>
     <td>${batPct ?? "—"}</td>
     <td class="col-voltage">${volt ?? "—"}</td>
-    <td>${deviceStatusTextFromLatest(latest)}</td>
+    <td>${deviceStatusLabelsFromLatest(latest).join(', ')}</td>
     <td>${fmtDateTime(updatedAt) || "—"}</td>
   `;
 
@@ -168,7 +159,7 @@ async function renderTable() {
       ph: ph ?? "",
       batteryPct: batPct ?? "",
       batteryVolt: volt ?? "",
-      statusText: deviceStatusTextFromLatest(latest),
+      statusText: deviceStatusLabelsFromLatest(latest).join(', '),
       updatedAt,
     };
   });

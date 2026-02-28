@@ -338,8 +338,9 @@ body {
 }
 
 .device-table tr:hover {
-  background-color: #eff6ff;
-  transform: translateY(-1px);
+  background-color: #dbeafe;
+  color: #0b3d91;
+  font-weight: 600;
 }
 
 /* màu dòng theo trạng thái */
