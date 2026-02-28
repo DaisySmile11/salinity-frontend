@@ -115,7 +115,7 @@ function exportDevicesCsv() {
     ].join(","));
   }
 
-  const csv = lines.join("\n");
+  const csv = lines.join("\r\n");
   const blob = new Blob(["﻿"+csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

@@ -70,8 +70,7 @@ function toCsv(rows) {
 
     lines.push(line);
   }
-  return lines.join("
-");
+  return lines.join("\r\n");
 }
 
 

@@ -1070,3 +1070,8 @@ body.admin-login-page {
 /* ==== Admin page centering ==== */
 body.page-admin .container{ display:flex; justify-content:center; }
 body.page-admin .admin-login-card{ margin:24px auto; }
+
+
+/* Logo link */
+a.logo { color: inherit; text-decoration: none; }
+a.logo:hover { text-decoration: underline; }
