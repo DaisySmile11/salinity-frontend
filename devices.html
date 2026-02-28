@@ -9,28 +9,31 @@
 </head>
 <body>
   <header class="main-header">
-<div class="header-left">
-<div class="logo">Giám sát độ mặn</div>
-<nav class="main-nav">
-<a href="index.html">Trang chủ</a>
+  <div class="header-left">
+    <div class="logo">Giám sát độ mặn</div>
+    <nav class="main-nav">
+      <a href="index.html">Trang chủ</a>
 <a class="active" href="devices.html">Danh sách thiết bị</a>
-<a href="admin.html">Admin</a>
-</nav>
-</div>
-<button class="nav-toggle" aria-label="Menu">☰</button>
+<a id="navAdmin" href="admin.html" style="display:none;">Admin</a>
+    </nav>
+  </div>
+  <div class="header-right">
+    <a id="navAuth" class="nav-auth" href="login.html">Login</a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+  </div>
 </header>
 
   <main class="container">
     <section class="section">
       <div class="section-header">
-        <h1>Danh sách thiết bị</h1>
+        <div class="section-header-row"><h1>Danh sách thiết bị</h1><button id="devicesExportBtn" class="btn-secondary" style="display:none">Export CSV</button></div>
         <p class="section-subtitle">
           Tổng hợp trạng thái các thiết bị đo độ mặn hiện đang cấu hình trong hệ thống.
         </p>
       </div>
 
       <div class="card">
-        <table class="device-table">
+        <table id="devicesTable" class="device-table">
           <thead>
             <tr>
               <th>Mã thiết bị</th>
@@ -46,7 +49,7 @@
             </tr>
           </thead>
           <tbody id="deviceTableBody"></tbody>
-        </table>
+        </table></div>
       </div>
 
       <div class="card note-card">

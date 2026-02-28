@@ -1,49 +1,62 @@
 // assets/js/nav.js (module)
-// - Navbar mobile toggle
-// - Hiển thị trạng thái Admin (Admin / Logout(email)) trên navbar
-
+// Navbar mobile toggle + auth state (Login/Logout) + hide/show Admin link
 import { isAdminLoggedIn, adminLogout, getAdminInfo } from "./auth.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Mobile toggle
+function enforceCanonicalHost() {
+  // Để localStorage không bị "mất" giữa www và non-www, ép dùng 1 host duy nhất.
+  const h = window.location.hostname;
+  if (h === "www.salinity.site") {
+    const url = new URL(window.location.href);
+    url.hostname = "salinity.site";
+    window.location.replace(url.toString());
+  }
+}
+
+function setupMobileToggle() {
   const toggle = document.querySelector(".nav-toggle");
   const nav = document.querySelector(".main-nav");
+  if (!toggle || !nav) return;
 
-  if (toggle && nav) {
-    toggle.addEventListener("click", () => {
-      nav.classList.toggle("open");
-    });
+  toggle.addEventListener("click", () => nav.classList.toggle("open"));
+  // đóng menu khi click link
+  nav.querySelectorAll("a").forEach(a => {
+    a.addEventListener("click", () => nav.classList.remove("open"));
+  });
+}
 
-    document.addEventListener("click", (e) => {
-      if (!nav.contains(e.target) && e.target !== toggle) {
-        nav.classList.remove("open");
-      }
-    });
-  }
+function renderAuthNav() {
+  const adminLink = document.getElementById("navAdmin");
+  const authLink = document.getElementById("navAuth");
 
-  renderAdminNav();
-});
+  const loggedIn = isAdminLoggedIn();
+  const info = getAdminInfo();
 
-export function renderAdminNav() {
-  // Navbar của bạn dùng link <a href="admin.html">Admin</a>
-  const adminLink = document.querySelector('a[href="admin.html"]');
-  if (!adminLink) return;
+  if (adminLink) adminLink.style.display = loggedIn ? "inline-block" : "none";
 
-  if (isAdminLoggedIn()) {
-    const info = getAdminInfo();
-    adminLink.textContent = `Logout (${info.email || "admin"})`;
-    adminLink.href = "#";
-    adminLink.onclick = (e) => {
+  if (!authLink) return;
+
+  if (!loggedIn) {
+    authLink.textContent = "Login";
+    authLink.href = "login.html";
+    authLink.onclick = null;
+    document.body.classList.remove("is-admin");
+  } else {
+    authLink.textContent = `Logout (${info.email || "admin"})`;
+    authLink.href = "#";
+    authLink.onclick = (e) => {
       e.preventDefault();
       adminLogout();
-      // refresh để cập nhật UI ngay
+      // sau logout quay về trang chủ
       window.location.href = "index.html";
     };
     document.body.classList.add("is-admin");
-  } else {
-    adminLink.textContent = "Admin";
-    adminLink.href = "admin.html";
-    adminLink.onclick = null;
-    document.body.classList.remove("is-admin");
   }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  enforceCanonicalHost();
+  setupMobileToggle();
+  renderAuthNav();
+});
+
+export { renderAuthNav };

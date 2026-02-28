@@ -15,15 +15,18 @@
 </head>
 <body>
 <header class="main-header">
-<div class="header-left">
-<div class="logo">Giám sát độ mặn</div>
-<nav class="main-nav">
-<a class="active" href="index.html">Trang chủ</a>
+  <div class="header-left">
+    <div class="logo">Giám sát độ mặn</div>
+    <nav class="main-nav">
+      <a class="active" href="index.html">Trang chủ</a>
 <a href="devices.html">Danh sách thiết bị</a>
-<a href="admin.html">Admin</a>
-</nav>
-</div>
-<button class="nav-toggle" aria-label="Menu">☰</button>
+<a id="navAdmin" href="admin.html" style="display:none;">Admin</a>
+    </nav>
+  </div>
+  <div class="header-right">
+    <a id="navAuth" class="nav-auth" href="login.html">Login</a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+  </div>
 </header>
 <!-- ===== ALERT BARS (4 loại) ===== -->
 <div class="alert red" id="alertSalinity"></div>
@@ -129,7 +132,6 @@
 <script src="assets/js/charts.js" type="module"></script>
 <script src="assets/js/map.js" type="module"></script>
 <script src="assets/js/app.js" type="module"></script>
-<script src="assets/js/admin.js" type="module"></script>
 <script type="module" src="assets/js/nav.js"></script>
 </body>
 </html>

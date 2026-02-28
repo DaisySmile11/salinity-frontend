@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="assets/css/styles.css"/>
+  <link rel="icon" href="assets/favicon.png"/>
+</head>
+<body>
+<header class="main-header">
+  <div class="header-left">
+    <div class="logo">Giám sát độ mặn</div>
+    <nav class="main-nav">
+      <a href="index.html">Trang chủ</a>
+<a href="devices.html">Danh sách thiết bị</a>
+<a id="navAdmin" href="admin.html" style="display:none;">Admin</a>
+    </nav>
+  </div>
+  <div class="header-right">
+    <a id="navAuth" class="nav-auth" href="login.html">Login</a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+  </div>
+</header>
+<main class="container" style="padding-top:24px">
+  <section class="section" style="max-width:520px;margin:0 auto;">
+    <div class="admin-login-card" role="region" aria-label="Login">
+      <div class="admin-brand">
+        <img class="admin-favicon" src="assets/favicon.png" alt="Favicon" />
+      </div>
+      <h1 class="admin-title">Đăng nhập</h1>
+      <form id="loginForm" class="admin-form" autocomplete="on">
+        <div class="admin-field">
+          <label for="loginEmail">Email:</label>
+          <input id="loginEmail" type="email" placeholder="admin@gmail.com" required />
+        </div>
+        <div class="admin-field">
+          <label for="loginPassword">Mật khẩu:</label>
+          <input id="loginPassword" type="password" placeholder="••••••" required />
+        </div>
+        <button class="admin-submit" type="submit">Login</button>
+        <div id="loginMsg" class="admin-msg" aria-live="polite" style="margin-top:10px"></div>
+      </form>
+    </div>
+  </section>
+</main>
+<footer class="main-footer">
+  <span>Giám sát độ mặn nước © 2025</span>
+</footer>
+<script type="module" src="assets/js/nav.js"></script>
+<script type="module" src="assets/js/login.js"></script>
+</body>
+</html>
